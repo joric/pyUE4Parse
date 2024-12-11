@@ -5,7 +5,7 @@
 ## Installation
     python -m pip install git+https://github.com/MinshuG/pyUE4Parse.git  // minimal installation
 
-    python -m pip install git+https://github.com/MinshuG/pyUE4Parse.git[tex]  // with texture decoders
+    python -m pip install UE4Parse[tex]@git+https://github.com/MinshuG/pyUE4Parse.git  // with texture decoders
 
 ## Features
 * Parse UE4/5 asset files(.uasset, .umap, .uexp, .ubulk)
