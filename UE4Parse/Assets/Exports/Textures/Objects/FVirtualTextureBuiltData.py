@@ -24,7 +24,24 @@ class FVirtualTextureTileOffsetData:
         self.MaxAddress = reader.readInt32()
         self.Addresses = reader.readTArray(reader.readInt32)
         self.Offsets = reader.readTArray(reader.readInt32)
-        #print(type(self).__name__, self.Width, self.Height, self.MaxAddress, self.Addresses, self.Offsets)
+
+    def GetTileOffset(self, inAddress:int) -> int:
+        blockIndex = 0
+        if self.Addresses:
+            for i in range(len(self.Addresses)):
+                if self.Addresses[i] > inAddress:
+                    blockIndex = i - 1;
+                    break;
+                if i == len(self.Addresses) and blockIndex == 0:
+                    blockIndex = len(self.Addresses) - 1
+
+        baseOffset = self.Offsets[blockIndex]
+        if baseOffset == 0xFFFFFFFF:
+            return baseOffset
+
+        baseAddress = self.Addresses[blockIndex]
+        localOffset = inAddress - baseAddress
+        return baseOffset + localOffset
 
     def GetValue(self):
         return {
@@ -34,38 +51,6 @@ class FVirtualTextureTileOffsetData:
             'Addresses': self.Addresses,
             'Offsets': self.Offsets,
         }
-
-    def GetTileOffset(self, inAddress:int) -> int:
-        return 0
-        '''
-            var blockIndex = 0;
-            if (Addresses != null)
-            {
-                for (var i = 0; i < Addresses.Length; i++)
-                {
-                    if (Addresses[i] > inAddress)
-                    {
-                        blockIndex = i - 1;
-                        break;
-                    }
-                    if (i == Addresses.Length - 1 && blockIndex == 0)
-                    {
-                        blockIndex = Addresses.Length - 1;
-                    }
-                }
-            }
-
-            var baseOffset = Offsets[blockIndex];
-            if (baseOffset == ~0u)
-            {
-                return ~0u;
-            }
-
-            uint baseAddress = Addresses[blockIndex];
-            uint localOffset = inAddress - baseAddress;
-            return baseOffset + localOffset;
-        }
-        '''
 
 class FVirtualTextureBuiltData:
     NumLayers: int
@@ -88,17 +73,23 @@ class FVirtualTextureBuiltData:
         self.HeightInBlocks = reader.readInt32()
         self.TileSize = reader.readInt32()
         self.TileBorderSize = reader.readInt32()
+        self.TileDataOffsetPerLayer = reader.readTArray(reader.readInt32) if reader.game >= GAME_UE5(0) else []
 
-        if reader.game >= GAME_UE5(0):
-            self.TileDataOffsetPerLayer = reader.readTArray(reader.readInt32)
-            #print('tiledataoffsetperlayer:', self.TileDataOffsetPerLayer)
+        self.NumMips = self.Width = self.Height = 0
+        self.ChunkIndexPerMip = []
+        self.BaseOffsetPerMip = []
+        self.TileOffsetData = []
+        self.TileIndexPerChunk = []
+        self.TileIndexPerMip = []
+        self.TileOffsetInChunk = []
+        self.LayerTypes = []
+        self.LayerFallbackColors = []
+        self.Chunks = []
 
         if not bStripMips:
              self.NumMips = reader.readInt32()
              self.Width = reader.readInt32()
              self.Height = reader.readInt32()
-
-             #print('mips, w, h:', self.NumMips, self.Width, self.Height)
 
              if reader.game >= GAME_UE5(0):
                  self.ChunkIndexPerMip = reader.readTArray(reader.readInt32);
@@ -108,23 +99,9 @@ class FVirtualTextureBuiltData:
              self.TileIndexPerChunk = reader.readTArray(reader.readInt32);
              self.TileIndexPerMip = reader.readTArray(reader.readInt32);
              self.TileOffsetInChunk = reader.readTArray(reader.readInt32);
-
-             #print( self.TileIndexPerChunk, self.TileIndexPerMip, self.TileOffsetInChunk )
-             #print('===', json.dumps(self.GetValue(),indent=2))
-
-             #print('ofs', f'0x{reader.position:X}')
-
-             self.LayerTypes = []
-             for i in range(self.NumLayers):
-                pixelFormat = EPixelFormat[reader.readFString()]
-                self.LayerTypes.append(pixelFormat)
-
-             self.LayerFallbackColors = []
-             if reader.game >= GAME_UE5(0):
-                 self.LayerFallbackColors = [FLinearColor(reader) for _ in range(self.NumLayers)]
-
-             count = reader.readInt32()
-             self.Chunks = [FVirtualTextureDataChunk(reader, self.NumLayers) for _ in range(count)]
+             self.LayerTypes = [EPixelFormat[x] for x in reader.readTArray2(reader.readFString, self.NumLayers)]
+             self.LayerFallbackColors = reader.readTArray2(FLinearColor, self.NumLayers, reader) if reader.game >= GAME_UE5(0) else []
+             self.Chunks = reader.readTArray(FVirtualTextureDataChunk, reader, self.NumLayers);
 
     def GetValue(self):
         return {

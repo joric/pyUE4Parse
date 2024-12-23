@@ -39,6 +39,5 @@ reader.Owner = IoPackageReader if fname.endswith('.uexp') else None
 data = FTexturePlatformData(reader, reader.ubulk_stream, reader.bulk_offset)
 
 #print(json.dumps(data.GetValue(), indent=2))
-#print(data.GetValue())
-
-print(data.GetValue()['VTData']['Chunks'])
+print(data.GetValue())
+#print(data.GetValue()['VTData']['Chunks'])
