@@ -18,6 +18,14 @@ class FByteBulkDataHeader:
         with suppress(ValueError):
             self.BulkDataFlags = self.BulkDataFlags
 
+        # TODO: add metadata support (virtual texture stuff)
+        if hasattr(reader, 'Owner'):
+             self.BulkDataFlags = 0
+             self.ElementCount = 0
+             self.OffsetInFile = 0
+             self.SizeOnDisk = 0
+             return
+
         if (self.BulkDataFlags & EBulkDataFlags.BULKDATA_Size64Bit) != 0:  # todo is this correct?
             self.ElementCount = reader.readInt64()
             self.SizeOnDisk = reader.readInt64()

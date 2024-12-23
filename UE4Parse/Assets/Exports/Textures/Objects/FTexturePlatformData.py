@@ -5,6 +5,7 @@ from UE4Parse.Assets.Objects.EPixelFormat import EPixelFormat
 from UE4Parse.Readers.FAssetReader import FAssetReader
 from UE4Parse.Versions.EUEVersion import GAME_UE4, EUEVersion
 from UE4Parse.Assets.Exports.Textures.Objects.FTexture2DMipMap import FTexture2DMipMap
+from UE4Parse.Assets.Exports.Textures.Objects.FVirtualTextureBuiltData import FVirtualTextureBuiltData
 
 
 class FTexturePlatformData:
@@ -16,6 +17,7 @@ class FTexturePlatformData:
     VirtualData = None
     bIsVirtual = False
     FirstMipToSerialize: int
+    VTData: FVirtualTextureBuiltData
 
     def __init__(self, reader: FAssetReader, ubulk: BinaryStream, ubulkOffset: int):
         self.deserialize(reader, ubulk, ubulkOffset)
@@ -35,7 +37,8 @@ class FTexturePlatformData:
         if reader.game >= GAME_UE4(23):
             self.bIsVirtual = reader.readInt32() != 0
             if self.bIsVirtual:
-                raise NotImplementedError("Virtual Textures are not implemented")
+                LODBias = 0 #Owner.GetOrDefault<int>("LODBias"); # TODO Owner
+                self.VTData = FVirtualTextureBuiltData(reader, self.FirstMipToSerialize - LODBias)
 
     def GetValue(self):
         return {
@@ -47,5 +50,6 @@ class FTexturePlatformData:
                 "Y": self.SizeY
             },
             "IsVirtual": self.bIsVirtual,
-            "Mips": [x.GetValue() for x in self.Mips]
+            "Mips": [x.GetValue() for x in self.Mips],
+            "VTData": self.VTData.GetValue() if hasattr(self, 'VTData') else {},
         }
