@@ -22,13 +22,9 @@ class FVirtualTextureDataChunk:
         self.deserialize(reader, numLayers)
 
     def deserialize(self, reader: BinaryStream, numLayers: int):
-        self.Hash = b''
-        if reader.game >= GAME_UE5(0):
-            self.Hash = FSHAHash(reader)
-
+        self.Hash = FSHAHash(reader) if reader.game >= GAME_UE5(0) else b''
         self.SizeInBytes = reader.readUInt32();
         self.CodecPayloadSize = reader.readUInt32();
-
         self.CodecType = reader.readTArray2(reader.readUInt8, numLayers)
         self.CodecPayloadOffset = reader.readTArray2(reader.readUInt32 if reader.game >= GAME_UE4(27) else reader.readInt16, numLayers)
         self.BulkData = FByteBulkData(reader, reader.ubulk_stream, reader.bulk_offset);
