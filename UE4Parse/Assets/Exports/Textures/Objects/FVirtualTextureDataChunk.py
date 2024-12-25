@@ -1,5 +1,3 @@
-from typing import Tuple, List, Optional, TYPE_CHECKING
-
 from UE4Parse.BinaryReader import BinaryStream
 from UE4Parse.Assets.Objects.EPixelFormat import EPixelFormat
 from UE4Parse.Versions.EUEVersion import GAME_UE4, GAME_UE5, EUEVersion

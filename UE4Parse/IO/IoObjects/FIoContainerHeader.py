@@ -15,6 +15,7 @@ class EIoContainerHeaderVersion(IntEnum):
         Initial = 0
         LocalizedPackages = 1
         OptionalSegmentPackages = 2
+        NoExportInfo = 3
         LatestPlusOne = auto()
         Latest = LatestPlusOne - 1
 

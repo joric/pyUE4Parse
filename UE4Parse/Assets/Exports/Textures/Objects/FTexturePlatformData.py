@@ -7,7 +7,6 @@ from UE4Parse.Versions.EUEVersion import GAME_UE4, EUEVersion
 from UE4Parse.Assets.Exports.Textures.Objects.FTexture2DMipMap import FTexture2DMipMap
 from UE4Parse.Assets.Exports.Textures.Objects.FVirtualTextureBuiltData import FVirtualTextureBuiltData
 
-
 class FTexturePlatformData:
     SizeX: int
     SizeY: int
@@ -37,8 +36,7 @@ class FTexturePlatformData:
         if reader.game >= GAME_UE4(23):
             self.bIsVirtual = reader.readInt32() != 0
             if self.bIsVirtual:
-                LODBias = 0 #Owner.GetOrDefault<int>("LODBias"); # TODO Owner
-                self.VTData = FVirtualTextureBuiltData(reader, self.FirstMipToSerialize - LODBias)
+                self.VTData = FVirtualTextureBuiltData(reader, self.FirstMipToSerialize)
 
     def GetValue(self):
         return {

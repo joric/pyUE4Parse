@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional, TYPE_CHECKING
+from typing import List
 
 from UE4Parse.BinaryReader import BinaryStream
 from UE4Parse.Assets.Objects.EPixelFormat import EPixelFormat

@@ -265,6 +265,14 @@ class FFileIoStoreReader:
         remaining_size = offsetAndLength.GetLength
         dst: bytes = b""
         # i = firstBlockIndex # BlockIndex
+
+        total_size = remaining_size
+        bLargeFile = total_size > 1024*1024 * 100 # warn on >100MB files
+        if bLargeFile:
+            logger.info(f"Large file ({remaining_size//1024//1024}MB), may take some time...")
+        last_size = total_size
+        start_time = time.time()
+
         for i in range(firstBlockIndex,
                        lastBlockIndex + 1):  # if firstBlockIndex == lastBlockIndex: lastBlockIndex -= 1 ??
             compressionBlock = self.TocResource.CompressionBlocks[i]
@@ -293,6 +301,12 @@ class FFileIoStoreReader:
             sizeInBlock = int(min(compressionBlockSize - offsetInBlock, remaining_size))
             dst += src[offsetInBlock:offsetInBlock + sizeInBlock]
             remaining_size -= sizeInBlock
+
+            if bLargeFile and remaining_size < last_size - 1024*1024 * 100: # warn every 100 MB
+                last_size = remaining_size
+                elapsed_time = time.time() - start_time
+                bytes_read = total_size - remaining_size
+                logger.info(f"{remaining_size//1024//1024}MB left, elapsed time {elapsed_time:.2f} seconds, approx. {elapsed_time*total_size/bytes_read-elapsed_time:.2f} seconds left")
 
         result = BinaryStream(dst)
         return result

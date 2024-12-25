@@ -13,7 +13,9 @@ class EIoStoreTocVersion(IntEnum):
     PartitionSize = auto()
     PerfectHash = auto()
     PerfectHashWithOverflow = auto()
-
+    OnDemandMetaData = auto()
+    RemovedOnDemandMetaData = auto()
+    ReplaceIoChunkHashWithIoHash = auto()
     LatestPlusOne = auto()
     Latest = LatestPlusOne - 1
 
